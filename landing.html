@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #F5F5DC 0%, #F8F9FA 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .lock-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 24px;
+            color: #176326;
+        }
+        h1 {
+            font-family: 'Libre Baskerville', 'Baskerville', 'Georgia', serif;
+            color: #176326;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #374151;
+            margin-bottom: 32px;
+        }
+        .form-group { margin-bottom: 24px; }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Lato', sans-serif;
+            transition: border-color 0.2s;
+        }
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #176326;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #176326;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: 'Lato', sans-serif;
+        }
+        .btn:hover { background: #1d7a2f; }
+        .error {
+            color: #DC2626;
+            font-size: 0.875rem;
+            margin-top: 8px;
+            display: none;
+        }
+        .error.show { display: block; }
+        .back-link {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .back-link a {
+            color: #176326;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link a:hover { text-decoration: underline; }
+        #protected-content { display: none; }
+        #protected-content.unlocked { display: block; }
+        .content {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .content h2 {
+            font-family: 'Libre Baskerville', 'Baskerville', 'Georgia', serif;
+            color: #176326;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #CDB65A;
+        }
+        .content p {
+            color: #374151;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .logout-btn {
+            margin-top: 24px;
+            background: #CDB65A;
+            color: #111827;
+        }
+        .logout-btn:hover { background: #b8a450; }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="login-form">
+        <svg class="lock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <h1>Private Access</h1>
+        <p class="subtitle">Enter password to continue</p>
+        <form id="password-form" onsubmit="checkPassword(event)">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="off" required>
+                <p class="error" id="error-message">Incorrect password. Please try again.</p>
+            </div>
+            <button type="submit" class="btn">Access</button>
+        </form>
+        <div class="back-link">
+            <a href="index.html">&larr; Back to home</a>
+        </div>
+    </div>
+    <div class="content" id="protected-content">
+        <h2>Welcome to Your Private Area</h2>
+        <p>This is your password-protected landing page. You can add any content here that you want to keep private.</p>
+        <p>Some ideas for what to include:</p>
+        <ul style="color: #374151; line-height: 1.8; margin-left: 24px; margin-bottom: 16px;">
+            <li>Personal project links</li>
+            <li>Private documents or resources</li>
+            <li>Work-in-progress portfolios</li>
+            <li>Internal tools or dashboards</li>
+        </ul>
+        <button onclick="logout()" class="btn logout-btn">Logout</button>
+    </div>
+    <script>
+        const CORRECT_PASSWORD = "Oakridge";
+        if (sessionStorage.getItem('authenticated') === 'true') { showContent(); }
+        function checkPassword(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-message');
+            if (password === CORRECT_PASSWORD) {
+                sessionStorage.setItem('authenticated', 'true');
+                showContent();
+            } else {
+                errorMsg.classList.add('show');
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+        }
+        function showContent() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('protected-content').classList.add('unlocked');
+        }
+        function logout() {
+            sessionStorage.removeItem('authenticated');
+            document.getElementById('protected-content').classList.remove('unlocked');
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('password').value = '';
+        }
+    </script>
+</body>
+</html>
